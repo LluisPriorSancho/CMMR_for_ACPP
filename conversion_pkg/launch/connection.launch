@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<launch>rosparam
+  
+  <node pkg="conversion_pkg"
+  type="traductor_node"
+  name="traductor"
+  />
+  
+  <node pkg="conversion_pkg"
+  type="tf_listener_node"
+  name="tf_listener"
+  />
+
+  <include file="$(find rosbridge_server)/launch/rosbridge_websocket.launch">
+    <arg name="port" value="8765"/>
+  </include>
+  
+  <!--  <include file="$(find leo_viz)/launch/rviz.launch">
+    <arg name="config" value="navigation"/>
+  </include>
+  -->
+  
+</launch>
+
+
