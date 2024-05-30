@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+
+<sdf version="1.6">
+  <world name="default">
+
+    <plugin name="gazebo_ros_state" filename="libgazebo_ros_state.so">
+      <ros>
+        <namespace>/demo</namespace>
+        <argument>model_states:=model_states_demo</argument>
+        <argument>link_states:=link_states_demo</argument>
+      </ros>
+
+      <update_rate>1.0</update_rate>
+    </plugin>
+
+    <!-- Tweak to run at higher or lower speeds -->
+    <physics name="normal" type="ode">
+      <real_time_update_rate>1000</real_time_update_rate>
+      <max_step_size>0.001</max_step_size>
+    </physics>
+
+    <!-- Ground plane -->
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+
+    <!-- Lighting -->
+    <include>
+      <uri>model://sun</uri>
+    </include>
+
+  </world>
+</sdf>
