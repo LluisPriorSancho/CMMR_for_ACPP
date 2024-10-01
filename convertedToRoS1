@@ -1,0 +1,107 @@
+import rospy
+from decawave_pkg.msg import DecawavePositionROS2, DecawaveListROS2
+import serial
+import time
+import math
+
+class DecawaveBridgeNode:
+    def __init__(self):
+        rospy.init_node("decawave_bridge_node")
+        rospy.loginfo("Starting DecawaveBridgeNode.")
+
+        # Get the parameter to turn on/off the decawave receiver
+        first_start = rospy.get_param("~first_start", False)
+
+        # Create the topic to publish the data
+        self.decawave_data_pub = rospy.Publisher("decawave_data", DecawaveList, queue_size=10)
+        self.data_list = DecawaveList()
+        self.list = []
+
+        # Open serial communication
+        self.DWM = serial.Serial(port="/dev/ttyUSB0", baudrate=115200, timeout=1)
+        rospy.loginfo("Connected to " + self.DWM.name)
+        self.DWM.flushInput()
+        self.DWM.flushOutput()
+        self.DWM.write("\r\r".encode())
+        time.sleep(1)
+
+        # Turn on or off the receiver based on the parameter
+        if first_start:
+            rospy.loginfo("Sending initial command: lep")
+            self.DWM.write("lep\r".encode())
+            time.sleep(1)
+        else:
+            rospy.loginfo("System already prepared")
+
+        self.DWM.flushInput()
+        self.DWM.flushOutput()
+        self.publish_decawave_data()
+
+    def decawave_shutdown_sequence(self):
+        rospy.loginfo("Shutting down")
+        self.DWM.write("\r".encode())
+        self.DWM.close()
+
+    def publish_decawave_data(self):
+        rate = rospy.Rate(2000)  # 2000 Hz loop
+        while not rospy.is_shutdown():
+            try:
+                # Read serial data
+                line = self.DWM.readline()
+                if line:
+                    if len(line) >= 20:
+                        # Parse the received line and create DecawavePosition message
+                        parse = line.decode().split(",")
+                        dwm_name = parse[2]
+			x_pos = parse[3]
+                        y_pos = parse[4]
+                        z_pos = parse[5]
+
+                        tag_data = DecawavePosition()
+                        tag_data.name = dwm_name
+                        tag_data.stamp = rospy.Time.now()
+                        tag_data.x = float(x_pos)
+                        tag_data.y = float(y_pos)
+                        tag_data.z = float(z_pos)
+
+                        # Check if the coordinates are valid
+                        if math.isnan(tag_data.x) or math.isnan(tag_data.y) or math.isnan(tag_data.z):
+                            continue
+
+                        # Check if the tag already exists
+                        tag_name_exists = False
+                        exist_index = None
+                        for i in range(len(self.list)):
+                            if self.list[i].name == dwm_name:
+                                tag_name_exists = True
+                                exist_index = i
+
+                        # Update existing tag or add new tag
+                        if tag_name_exists:
+                            self.list[exist_index] = tag_data
+                        else:
+                            self.list.append(tag_data)
+
+                        # Publish the DecawaveList
+                        self.data_list.amount = len(self.list)
+                        self.data_list.stamp = rospy.Time.now()
+                        self.data_list.decawave_positions = self.list
+                        self.decawave_data_pub.publish(self.data_list)
+
+            except Exception as ex:
+                rospy.logerr("Error: {}".format(ex))
+                break
+
+            rate.sleep()
+
+def main():
+    try:
+        decawave_bridge_node = DecawaveBridgeNode()
+        rospy.on_shutdown(decawave_bridge_node.decawave_shutdown_sequence)
+        rospy.spin()
+    except rospy.ROSInterruptException:
+        pass
+
+if __name__ == "__main__":
+	main()
+
