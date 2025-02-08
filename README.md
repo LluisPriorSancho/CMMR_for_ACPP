@@ -4,6 +4,8 @@
 This git repository includes all the necessary files to create a Cooperative Multi-Modal Robot for Autonomous Coverage Path Planning in ROS2 - humble. It enables the possibility to work in a virtual environment powered by Gazebo or to work directly in the real hardware using a DJI Tello drone and a Leo rover.
 
 This repository is part of the Master's thesis "Cooperative Multi-Modal Robots for Autonomous Coverage Path Planning" by Lluis Prior. For further information access [here](https://drive.google.com/file/d/1O6j72nzqwbA8HTsFL853CV2fNH2on2dY/view?usp=sharing)
+
+[![Video](https://res.cloudinary.com/marcomontalbano/image/upload/v1739005576/video_to_markdown/images/google-drive--1eD390trXYyCGPKiSVs8rt14_KYjpfMv8-c05b58ac6eb4c4700831b2b3070cd403.jpg)](https://drive.google.com/file/d/1eD390trXYyCGPKiSVs8rt14_KYjpfMv8/view?usp=drive_link "Video")
 ______________________________________________________________________
 
 <details open>
